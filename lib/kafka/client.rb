@@ -75,7 +75,7 @@ module Kafka
     # @param partition_key [String] a value used to deterministically choose a
     #   partition to write to.
     # @return [nil]
-    def deliver_message(value, key: nil, topic:, partition: nil, partition_key: nil)
+    def deliver_message(value, key: nil, topic:, partition: nil, partition_key: nil, required_acks: 1)
       create_time = Time.now
 
       message = PendingMessage.new(
@@ -112,18 +112,20 @@ module Kafka
       operation = ProduceOperation.new(
         cluster: @cluster,
         buffer: buffer,
-        required_acks: 1,
+        required_acks: required_acks,
         ack_timeout: 10,
         compressor: compressor,
         logger: @logger,
         instrumenter: @instrumenter,
       )
 
-      operation.execute
+      retval = operation.execute
 
       unless buffer.empty?
         raise DeliveryFailed
       end
+
+      retval
     end
 
     # Initializes a new Kafka producer.

@@ -27,7 +27,9 @@ describe "Producer API", functional: true do
   end
 
   example "delivering a message to a topic" do
-    kafka.deliver_message("yolo", topic: topic, key: "xoxo", partition: 0)
+    response = kafka.deliver_message("yolo", topic: topic, key: "xoxo", partition: 0, required_acks: 1)
+
+    expect(response).not_to be_nil
 
     message = kafka.fetch_messages(topic: topic, partition: 0, offset: 0).first
 

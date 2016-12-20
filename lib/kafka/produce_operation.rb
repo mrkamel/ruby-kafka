@@ -76,7 +76,7 @@ module Kafka
         end
       end
 
-      messages_for_broker.each do |broker, message_buffer|
+      messages_for_broker.each_with_object([]) do |(broker, message_buffer), responses|
         begin
           @logger.info "Sending #{message_buffer.size} messages to #{broker}"
 
@@ -96,7 +96,7 @@ module Kafka
             timeout: @ack_timeout * 1000, # Kafka expects the timeout in milliseconds.
           )
 
-          handle_response(response) if response
+          responses.push(handle_response(response)) if response
         rescue ConnectionError => e
           @logger.error "Could not connect to broker #{broker}: #{e}"
 
